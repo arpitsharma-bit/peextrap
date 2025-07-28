@@ -1,0 +1,1 @@
+SELECT trigger_name FROM information_schema.triggers WHERE trigger_name = 'create_default_categories_trigger'; 
