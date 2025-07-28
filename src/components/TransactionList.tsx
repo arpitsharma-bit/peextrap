@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Transaction, Category } from '../types';
+import { formatCurrency } from '../utils/currency';
+import { useAuth } from '../hooks/useAuth';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -14,9 +16,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   selectedMonth,
   onDelete 
 }) => {
+  const { user } = useAuth();
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const userCurrency = user?.user_metadata?.currency || 'USD';
 
   // Filter transactions for selected month first
   const monthlyTransactions = transactions.filter(t => {
@@ -27,7 +32,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   const filteredTransactions = monthlyTransactions.filter(transaction => {
     const matchesFilter = filter === 'all' || transaction.type === filter;
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = !searchTerm || (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
 
@@ -99,7 +104,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       {category?.icon}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{transaction.description}</p>
+                      <p className="font-medium text-gray-900">
+                        {transaction.description || 'No name'}
+                      </p>
                       <div className="flex items-center space-x-2 text-sm text-gray-500">
                         <span>{category?.name}</span>
                         <span>•</span>
@@ -109,19 +116,19 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   </div>
                   
                   <div className="flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                      </p>
-                    </div>
+                                      <div className="text-right">
+                    <p className={`font-semibold ${
+                      transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, userCurrency)}
+                    </p>
+                  </div>
                     <button
                       onClick={() => handleDelete(transaction.id)}
-                      disabled={isDeleting}
+                      disabled={deletingId === transaction.id}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isDeleting ? (
+                      {deletingId === transaction.id ? (
                         <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                       ) : (
                         '🗑️'

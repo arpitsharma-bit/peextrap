@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom breakpoint for extra small screens */
+@media (min-width: 475px) {
+  .xs\:flex {
+    display: flex;
+  }
+}

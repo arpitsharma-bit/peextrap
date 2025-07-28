@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Budget, Category, Transaction } from '../types';
+import { formatCurrency, getCurrencySymbol } from '../utils/currency';
+import { useAuth } from '../hooks/useAuth';
 
 interface BudgetTrackerProps {
   budgets: Budget[];
@@ -19,6 +21,8 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
   onAddBudget,
   onDeleteBudget,
 }) => {
+  const { user } = useAuth();
+  const userCurrency = user?.user_metadata?.currency || 'USD';
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -131,15 +135,20 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Budget Amount
                 </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0.00"
-                  required
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    {getCurrencySymbol(userCurrency)}
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
@@ -217,7 +226,7 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Spent</span>
                   <span className={`font-medium ${isOverBudget ? 'text-red-600' : 'text-gray-900'}`}>
-                    ${progress.spent.toFixed(2)} / ${budget.amount.toFixed(2)}
+                    {formatCurrency(progress.spent, userCurrency)} / {formatCurrency(budget.amount, userCurrency)}
                   </span>
                 </div>
 
@@ -241,7 +250,7 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
                   <span className={`text-sm font-semibold ${
                     progress.remaining >= 0 ? 'text-emerald-600' : 'text-red-600'
                   }`}>
-                    ${Math.abs(progress.remaining).toFixed(2)}
+                    {formatCurrency(Math.abs(progress.remaining), userCurrency)}
                   </span>
                 </div>
               </div>

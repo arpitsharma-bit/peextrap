@@ -9,6 +9,7 @@ import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { BudgetTracker } from './components/BudgetTracker';
 import { Analytics } from './components/Analytics';
+import { Snackbar } from './components/Snackbar';
 import { Transaction, Budget } from './types';
 
 function App() {
@@ -30,6 +31,16 @@ function App() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    message: string;
+    type: 'success' | 'error';
+    isVisible: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    isVisible: false,
+  });
 
   // Handle authentication
   const handleAuth = async (email: string, password: string) => {
@@ -83,24 +94,133 @@ function App() {
 
   // Handle transaction operations
   const handleAddTransaction = async (transaction: Omit<Transaction, 'id'>) => {
-    await addTransaction(transaction);
+    try {
+      const result = await addTransaction(transaction);
+      if (result?.error) {
+        setSnackbar({
+          message: 'Failed to add transaction',
+          type: 'error',
+          isVisible: true,
+        });
+      } else {
+        setSnackbar({
+          message: 'Transaction added successfully!',
+          type: 'success',
+          isVisible: true,
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        message: 'Failed to add transaction',
+        type: 'error',
+        isVisible: true,
+      });
+    }
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    await deleteTransaction(id);
+    try {
+      const result = await deleteTransaction(id);
+      if (result?.error) {
+        setSnackbar({
+          message: 'Failed to delete transaction',
+          type: 'error',
+          isVisible: true,
+        });
+      } else {
+        setSnackbar({
+          message: 'Transaction deleted successfully!',
+          type: 'success',
+          isVisible: true,
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        message: 'Failed to delete transaction',
+        type: 'error',
+        isVisible: true,
+      });
+    }
   };
 
   // Handle budget operations
   const handleAddBudget = async (budget: Omit<Budget, 'id'>) => {
-    await addBudget(budget);
+    try {
+      const result = await addBudget(budget);
+      if (result?.error) {
+        setSnackbar({
+          message: 'Failed to add budget',
+          type: 'error',
+          isVisible: true,
+        });
+      } else {
+        setSnackbar({
+          message: 'Budget added successfully!',
+          type: 'success',
+          isVisible: true,
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        message: 'Failed to add budget',
+        type: 'error',
+        isVisible: true,
+      });
+    }
   };
 
   const handleUpdateBudget = async (id: string, updates: Partial<Budget>) => {
-    await updateBudget(id, updates);
+    try {
+      const result = await updateBudget(id, updates);
+      if (result?.error) {
+        setSnackbar({
+          message: 'Failed to update budget',
+          type: 'error',
+          isVisible: true,
+        });
+      } else {
+        setSnackbar({
+          message: 'Budget updated successfully!',
+          type: 'success',
+          isVisible: true,
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        message: 'Failed to update budget',
+        type: 'error',
+        isVisible: true,
+      });
+    }
   };
 
   const handleDeleteBudget = async (id: string) => {
-    await deleteBudget(id);
+    try {
+      const result = await deleteBudget(id);
+      if (result?.error) {
+        setSnackbar({
+          message: 'Failed to delete budget',
+          type: 'error',
+          isVisible: true,
+        });
+      } else {
+        setSnackbar({
+          message: 'Budget deleted successfully!',
+          type: 'success',
+          isVisible: true,
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        message: 'Failed to delete budget',
+        type: 'error',
+        isVisible: true,
+      });
+    }
+  };
+
+  const closeSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, isVisible: false }));
   };
 
   const navItems = [
@@ -139,18 +259,23 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (
           <Dashboard 
-            transactions={transactions} 
-            categories={categories}
-            budgets={budgets}
+            totalIncome={0} // Will be calculated in Dashboard component
+            totalExpenses={0} // Will be calculated in Dashboard component
+            balance={0} // Will be calculated in Dashboard component
+            monthlyTransactions={transactions}
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
           />
         )}
         {activeTab === 'add' && (
-          <TransactionForm 
-            onSubmit={handleAddTransaction} 
-            categories={categories}
-          />
+          <div className="text-center py-12">
+            <button
+              onClick={() => setIsTransactionFormOpen(true)}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-200"
+            >
+              Add New Transaction
+            </button>
+          </div>
         )}
         {activeTab === 'transactions' && (
           <TransactionList 
@@ -179,6 +304,19 @@ function App() {
           />
         )}
       </main>
+      
+      <TransactionForm
+        isOpen={isTransactionFormOpen}
+        onClose={() => setIsTransactionFormOpen(false)}
+        onSubmit={handleAddTransaction}
+      />
+      
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isVisible={snackbar.isVisible}
+        onClose={closeSnackbar}
+      />
     </div>
   );
 }

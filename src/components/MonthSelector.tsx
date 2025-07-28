@@ -37,34 +37,34 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onM
   };
 
   return (
-    <div className="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-      <div className="flex items-center space-x-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+      <div className="flex items-center space-x-2 sm:space-x-4">
         <button
           onClick={goToPreviousMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
           title="Previous Month"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
         </button>
         
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900">{formatMonth(selectedMonth)}</h2>
-          <p className="text-sm text-gray-500">Monthly Overview</p>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">{formatMonth(selectedMonth)}</h2>
+          <p className="text-xs sm:text-sm text-gray-500">Monthly Overview</p>
         </div>
         
         <button
           onClick={goToNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
           title="Next Month"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
         </button>
       </div>
       
       {!isCurrentMonth() && (
         <button
           onClick={goToCurrentMonth}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium"
+          className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-xs sm:text-sm font-medium"
         >
           Current Month
         </button>

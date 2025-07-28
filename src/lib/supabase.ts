@@ -17,7 +17,7 @@ export type Database = {
           id: string
           user_id: string
           amount: number
-          description: string
+          description: string | null
           category_id: string
           type: 'income' | 'expense'
           date: string
@@ -29,7 +29,7 @@ export type Database = {
           id?: string
           user_id: string
           amount: number
-          description: string
+          description?: string | null
           category_id: string
           type: 'income' | 'expense'
           date: string
@@ -41,7 +41,7 @@ export type Database = {
           id?: string
           user_id?: string
           amount?: number
-          description?: string
+          description?: string | null
           category_id?: string
           type?: 'income' | 'expense'
           date?: string
@@ -112,6 +112,44 @@ export type Database = {
           start_date?: string
           created_at?: string
           updated_at?: string
+        }
+        user_profiles: {
+          Row: {
+            id: string
+            user_id: string
+            full_name: string | null
+            email: string | null
+            profile_picture_url: string | null
+            currency: string
+            country: string
+            preferences: any
+            created_at: string
+            updated_at: string
+          }
+          Insert: {
+            id?: string
+            user_id: string
+            full_name?: string | null
+            email?: string | null
+            profile_picture_url?: string | null
+            currency?: string
+            country?: string
+            preferences?: any
+            created_at?: string
+            updated_at?: string
+          }
+          Update: {
+            id?: string
+            user_id?: string
+            full_name?: string | null
+            email?: string | null
+            profile_picture_url?: string | null
+            currency?: string
+            country?: string
+            preferences?: any
+            created_at?: string
+            updated_at?: string
+          }
         }
       }
     }
