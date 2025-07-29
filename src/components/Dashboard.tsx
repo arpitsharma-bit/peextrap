@@ -54,55 +54,62 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onMonthChange={onMonthChange}
       />
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <StatCard
-          title="Total Income"
-          value={currentMonthIncome}
-          change={+12.5}
-          isPercentage={false}
-          currency={userCurrency}
-          className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
-        />
-        <StatCard
-          title="Total Expenses"
-          value={currentMonthExpenses}
-          change={-8.2}
-          isPercentage={false}
-          currency={userCurrency}
-          className="bg-gradient-to-br from-red-50 to-red-100 border-red-200"
-        />
-        <StatCard
-          title="Balance"
-          value={currentMonthBalance}
-          change={+4.3}
-          isPercentage={false}
-          currency={userCurrency}
-          className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 sm:col-span-2 lg:col-span-1"
-        />
+      <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4">
+        {/* Balance Card - Full width on mobile, 1/3 on larger screens */}
+        <div className="w-full">
+          <StatCard
+            title="Balance"
+            value={currentMonthBalance}
+            change={+4.3}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
+          />
+        </div>
+        
+        {/* Income and Expenses - Single row on mobile, separate on larger screens */}
+        <div className="grid grid-cols-2 gap-3 sm:contents">
+          <StatCard
+            title="Total Income"
+            value={currentMonthIncome}
+            change={+12.5}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
+          />
+          <StatCard
+            title="Total Expenses"
+            value={currentMonthExpenses}
+            change={-8.2}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-red-50 to-red-100 border-red-200"
+          />
+        </div>
       </div>
 
       {/* Charts and Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Monthly Trend Chart */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Monthly Trend</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Monthly Trend</h3>
             <MonthlyTrend transactions={monthlyTransactions} />
           </div>
         </div>
 
         {/* Recent Transactions */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Recent Transactions</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Recent Transactions</h3>
             <RecentTransactions transactions={currentMonthTransactions.slice(0, 5)} currency={userCurrency} />
           </div>
         </div>
       </div>
 
       {/* Month Comparison */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Month Comparison</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+        <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Month Comparison</h3>
         <MonthComparison currency={userCurrency} />
       </div>
     </div>
