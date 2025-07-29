@@ -1,57 +1,57 @@
 import React from 'react';
+import { formatCurrency } from '../utils/currency';
 
 interface StatCardProps {
   title: string;
   value: number;
-  icon: string;
-  color: 'green' | 'red' | 'blue' | 'orange';
-  trend: 'up' | 'down' | 'neutral';
+  change?: number;
   isPercentage?: boolean;
+  currency?: string;
+  className?: string;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({ 
   title, 
   value, 
-  icon, 
-  color, 
-  trend, 
-  isPercentage = false 
+  change,
+  isPercentage = false,
+  currency = 'USD',
+  className = ''
 }) => {
-  const colorClasses = {
-    green: 'from-emerald-500 to-emerald-600',
-    red: 'from-red-500 to-red-600',
-    blue: 'from-blue-500 to-blue-600',
-    orange: 'from-orange-500 to-orange-600',
-  };
-
-  const trendIcon = {
-    up: '📈',
-    down: '📉',
-    neutral: '📊',
-  };
-
   const formatValue = (val: number) => {
     if (isPercentage) {
       return `${val.toFixed(1)}%`;
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(val);
+    return formatCurrency(val, currency);
+  };
+
+  const getChangeColor = (change?: number) => {
+    if (!change) return 'text-gray-500';
+    return change > 0 ? 'text-emerald-600' : 'text-red-600';
+  };
+
+  const getChangeIcon = (change?: number) => {
+    if (!change) return '📊';
+    return change > 0 ? '📈' : '📉';
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`w-12 h-12 bg-gradient-to-br ${colorClasses[color]} rounded-lg flex items-center justify-center`}>
-          <span className="text-xl">{icon}</span>
+    <div className={`bg-white rounded-xl shadow-sm border p-4 sm:p-6 hover:shadow-md transition-shadow duration-200 ${className}`}>
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+          <span className="text-lg sm:text-xl">💰</span>
         </div>
-        <span className="text-lg">{trendIcon[trend]}</span>
+        {change !== undefined && (
+          <div className={`flex items-center space-x-1 text-sm ${getChangeColor(change)}`}>
+            <span>{getChangeIcon(change)}</span>
+            <span>{change > 0 ? '+' : ''}{change}%</span>
+          </div>
+        )}
       </div>
       
       <div>
         <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-        <p className="text-2xl font-bold text-gray-900">{formatValue(value)}</p>
+        <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatValue(value)}</p>
       </div>
     </div>
   );

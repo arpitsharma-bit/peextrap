@@ -44,9 +44,34 @@ export function useSupabaseData() {
 
       if (budgetsError) throw budgetsError
 
+      // Map database fields to frontend format
+      const mappedTransactions = (transactionsData || []).map(transaction => ({
+        id: transaction.id,
+        user_id: transaction.user_id,
+        amount: transaction.amount,
+        description: transaction.description,
+        categoryId: transaction.category_id,
+        type: transaction.type,
+        date: transaction.date,
+        tags: transaction.tags,
+        created_at: transaction.created_at,
+        updated_at: transaction.updated_at,
+      }))
+
+      const mappedBudgets = (budgetsData || []).map(budget => ({
+        id: budget.id,
+        user_id: budget.user_id,
+        categoryId: budget.category_id,
+        amount: budget.amount,
+        period: budget.period,
+        startDate: budget.start_date,
+        created_at: budget.created_at,
+        updated_at: budget.updated_at,
+      }))
+
       setCategories(categoriesData || [])
-      setTransactions(transactionsData || [])
-      setBudgets(budgetsData || [])
+      setTransactions(mappedTransactions)
+      setBudgets(mappedBudgets)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -70,19 +95,42 @@ export function useSupabaseData() {
     if (!user) return
 
     try {
+      // Map camelCase to snake_case for database
       const { data, error } = await supabase
         .from('transactions')
         .insert([{
-          ...transaction,
           user_id: user.id,
+          amount: transaction.amount,
+          description: transaction.description,
+          category_id: transaction.categoryId,
+          type: transaction.type,
+          date: transaction.date,
+          tags: transaction.tags || [],
         }])
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error adding transaction:', error)
+        throw error
+      }
 
-      setTransactions(prev => [data, ...prev])
-      return { data, error: null }
+      // Map the returned data to frontend format
+      const mappedData = {
+        id: data.id,
+        user_id: data.user_id,
+        amount: data.amount,
+        description: data.description,
+        categoryId: data.category_id,
+        type: data.type,
+        date: data.date,
+        tags: data.tags,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      }
+
+      setTransactions(prev => [mappedData, ...prev])
+      return { data: mappedData, error: null }
     } catch (error) {
       console.error('Error adding transaction:', error)
       return { data: null, error }

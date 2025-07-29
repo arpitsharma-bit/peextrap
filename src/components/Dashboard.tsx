@@ -1,115 +1,116 @@
 import React from 'react';
-import { Transaction, Category, Budget } from '../types';
 import { StatCard } from './StatCard';
-import { ExpenseChart } from './ExpenseChart';
 import { RecentTransactions } from './RecentTransactions';
+import { MonthlyTrend } from './MonthlyTrend';
 import { MonthComparison } from './MonthComparison';
 import { MonthSelector } from './MonthSelector';
+import { useAuth } from '../hooks/useAuth';
 
 interface DashboardProps {
-  transactions: Transaction[];
-  categories: Category[];
-  budgets: Budget[];
+  totalIncome: number;
+  totalExpenses: number;
+  balance: number;
+  monthlyTransactions: any[];
   selectedMonth: Date;
   onMonthChange: (month: Date) => void;
+  currency?: string;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
-  transactions, 
-  categories, 
-  budgets, 
-  selectedMonth, 
-  onMonthChange 
+  totalIncome, 
+  totalExpenses, 
+  balance, 
+  monthlyTransactions,
+  selectedMonth,
+  onMonthChange,
+  currency = 'USD'
 }) => {
-  const currentMonth = selectedMonth.getMonth();
-  const currentYear = selectedMonth.getFullYear();
-  
-  const currentMonthTransactions = transactions.filter(t => {
-    const transactionDate = new Date(t.date);
-    return transactionDate.getMonth() === currentMonth && 
-           transactionDate.getFullYear() === currentYear;
+  const { user } = useAuth();
+  const userCurrency = user?.user_metadata?.currency || 'USD';
+
+  // Filter transactions for the selected month
+  const currentMonthTransactions = monthlyTransactions.filter(transaction => {
+    const transactionDate = new Date(transaction.date);
+    return transactionDate.getMonth() === selectedMonth.getMonth() && 
+           transactionDate.getFullYear() === selectedMonth.getFullYear();
   });
 
-  const totalIncome = currentMonthTransactions
+  // Calculate totals for the selected month
+  const currentMonthIncome = currentMonthTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalExpenses = currentMonthTransactions
+  const currentMonthExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const balance = totalIncome - totalExpenses;
-
-  const totalBudget = budgets
-    .filter(b => b.period === 'monthly')
-    .reduce((sum, b) => sum + b.amount, 0);
+  const currentMonthBalance = currentMonthIncome - currentMonthExpenses;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Month Selector */}
       <MonthSelector 
-        selectedMonth={selectedMonth} 
-        onMonthChange={onMonthChange} 
+        selectedMonth={selectedMonth}
+        onMonthChange={onMonthChange}
       />
-      
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Financial Overview</h2>
-        <p className="text-gray-600">Your financial snapshot for {selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Income"
-          value={totalIncome}
-          icon="💰"
-          color="green"
-          trend={totalIncome > 0 ? 'up' : 'neutral'}
-        />
-        <StatCard
-          title="Total Expenses"
-          value={totalExpenses}
-          icon="💸"
-          color="red"
-          trend={totalExpenses > totalBudget ? 'down' : 'neutral'}
-        />
-        <StatCard
-          title="Balance"
-          value={balance}
-          icon="⚖️"
-          color={balance >= 0 ? 'green' : 'red'}
-          trend={balance >= 0 ? 'up' : 'down'}
-        />
-        <StatCard
-          title="Budget Used"
-          value={totalBudget > 0 ? (totalExpenses / totalBudget) * 100 : 0}
-          icon="🎯"
-          color={totalExpenses > totalBudget ? 'red' : 'blue'}
-          trend="neutral"
-          isPercentage
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Spending by Category</h3>
-          <ExpenseChart 
-            transactions={currentMonthTransactions.filter(t => t.type === 'expense')} 
-            categories={categories}
+      {/* Stats Cards */}
+      <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4">
+        {/* Balance Card - Full width on mobile, 1/3 on larger screens */}
+        <div className="w-full">
+          <StatCard
+            title="Balance"
+            value={currentMonthBalance}
+            change={+4.3}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
           />
         </div>
-
-        <MonthComparison 
-          transactions={transactions}
-          categories={categories}
-          selectedMonth={selectedMonth}
-        />
+        
+        {/* Income and Expenses - Single row on mobile, separate on larger screens */}
+        <div className="grid grid-cols-2 gap-3 sm:contents">
+          <StatCard
+            title="Total Income"
+            value={currentMonthIncome}
+            change={+12.5}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
+          />
+          <StatCard
+            title="Total Expenses"
+            value={currentMonthExpenses}
+            change={-8.2}
+            isPercentage={false}
+            currency={userCurrency}
+            className="bg-gradient-to-br from-red-50 to-red-100 border-red-200"
+          />
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions This Month</h3>
-        <RecentTransactions 
-          transactions={currentMonthTransactions.slice(0, 5)} 
-          categories={categories}
-        />
+      {/* Charts and Recent Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Monthly Trend Chart */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Monthly Trend</h3>
+            <MonthlyTrend transactions={monthlyTransactions} />
+          </div>
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Recent Transactions</h3>
+            <RecentTransactions transactions={currentMonthTransactions.slice(0, 5)} currency={userCurrency} />
+          </div>
+        </div>
+      </div>
+
+      {/* Month Comparison */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
+        <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-6">Month Comparison</h3>
+        <MonthComparison currency={userCurrency} />
       </div>
     </div>
   );
